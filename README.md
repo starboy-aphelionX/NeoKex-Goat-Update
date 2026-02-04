@@ -1,4 +1,7 @@
-# ⚔️ CID KAGENO - Messenger Bot 
+# Aphelion - Messenger Bot
+
+<img src="https://i.postimg.cc/mDQfyLd4/200w-(1).gif" alt="banner">
+<h1 align="center"><img src="./dashboard/images/logo-non-bg.png" width="22px">
 
 ![Project Status](https://img.shields.io/badge/Status-Active-brightgreen)
 ![Platform](https://img.shields.io/badge/Platform-Render-blue)
@@ -6,82 +9,107 @@
 
 > "I am Atomic."
 >
-> A high-performance Facebook Messenger bot powered by `fca-neokex`. Designed for stability on Render with a custom "Shadow Garden" aesthetic.
+> A high-performance Facebook Messenger bot powered by **NeoKex (Multi-FCA Fork)**. Built for stability on Render with a custom **Shadow Garden** aesthetic.
+
+---
+
+## 👑 Owner
+
+**Starboy Aphelion**
 
 ---
 
 ## ⚡ Features
 
-* **Render Optimized:** Auto-login and "Keep-Alive" support.
-* **Anti-Ban Logic:** Uses Windows User-Agent spoofing to bypass `1357004` blocks.
-* **Shadow Garden Theme:** Custom ASCII art startup screen.
-* **Command System:** Modular command handling (GoatBot V2 structure).
-* **Auto-Restart:** Automatically recovers from temporary Facebook disconnects.
+* **Render Optimized:** Auto-login and keep-alive support for free tiers.
+* **Anti-Ban Logic:** Windows User-Agent spoofing to reduce `1357004` blocks.
+* **Shadow Garden Theme:** Custom ASCII-art startup banner.
+* **Command System:** Modular command handling (GoatBot V2–style structure).
+* **Multi-FCA Support:** NeoKex fork enhanced with additional FCA compatibility.
+* **Auto-Restart:** Recovers automatically from temporary Facebook disconnects.
 
 ---
 
 ## 🚀 Installation & Setup
 
 ### **1. Prerequisites**
+
 * A Facebook account (secondary/bot account recommended).
 * A GitHub account.
-* A [Render.com](https://render.com) account (Free Tier works).
-
-### **2. Deploy to Render**
-
-1.  **Fork this Repository** to your GitHub.
-2.  Create a new **Web Service** on Render.
-3.  Connect your GitHub repository.
-4.  Use the following settings:
-    * **Runtime:** `Node`
-    * **Build Command:** `npm install`
-    * **Start Command:** `npm start`
-5.  **Important:** In the "Environment" section, ensure Node version is set to `18` or higher (via `package.json` engines).
+* A [Render.com](https://render.com) account (Free Tier supported).
 
 ---
 
-## 🍪 How to Get Cookies (account.txt)
+### **2. Deploy to Render**
 
-This bot requires cookies to log in without a password, which prevents security locks.
+1. Fork this repository to your GitHub account.
+2. Create a new **Web Service** on Render.
+3. Connect your GitHub repository.
+4. Use the following settings:
 
-1.  Download the **Cookie-Editor** extension for your browser.
-2.  Go to Facebook and log in to your bot account.
-3.  Open the extension -> Click **Export** -> **Export as JSON**.
-4.  Create a file named `account.txt` in your project root.
-5.  Paste the JSON code inside and save.
-6.  **Upload/Commit** `account.txt` to your repo (Keep it private!).
+   * **Runtime:** Node
+   * **Build Command:** `npm install`
+   * **Start Command:** `npm start`
+5. In **Environment Settings**, ensure Node.js version is **18 or higher** (via `package.json` engines).
+
+---
+
+## 🍪 Cookie Login Setup (`account.txt`)
+
+This bot uses Facebook cookies for passwordless login to avoid security checkpoints.
+
+### **Steps**
+
+1. Install the **Cookie-Editor** browser extension.
+2. Log in to Facebook using your bot account.
+3. Open Cookie-Editor → **Export** → **Export as JSON**.
+4. Create a file named `account.txt` in the project root.
+5. Paste the exported JSON into `account.txt` and save.
+6. Commit/upload the file to your private repository.
+
+> ⚠️ **Security Tip:** Never share your cookies publicly.
 
 ---
 
 ## 🛠️ Troubleshooting
 
-### **Error: 1357004 / "Not Logged In"**
-* **Cause:** Facebook has flagged the Render IP address.
-* **Fix:**
-    1.  Log out of the bot account on your PC.
-    2.  Clear browser cache/cookies.
-    3.  Log in again (Incognito mode recommended).
-    4.  Export **NEW** cookies.
-    5.  Update `account.txt` and redeploy.
+### **Error: 1357004 / Not Logged In**
+
+**Cause:** Facebook flagged the Render IP or session.
+
+**Fix:**
+
+1. Log out of the bot account on all devices.
+2. Clear browser cookies and cache.
+3. Log in again (Incognito recommended).
+4. Export fresh cookies.
+5. Replace `account.txt` and redeploy on Render.
+
+---
 
 ### **Error: `undici` or `fetch` not found**
-* **Cause:** Render is using an old Node version (v14/v16).
-* **Fix:** Ensure your `package.json` has this:
-    ```json
-    "engines": {
-      "node": ">=18.0.0"
-    }
-    ```
-    Then go to Render -> Manual Deploy -> **Clear Build Cache & Deploy**.
+
+**Cause:** Node.js version is too old.
+
+**Fix:** Ensure `package.json` includes:
+
+```json
+"engines": {
+  "node": ">=18.0.0"
+}
+```
+
+Then go to Render → **Manual Deploy** → **Clear Build Cache & Deploy**.
 
 ---
 
-## 📝 Credits
+## 🧬 Credits
 
-* **Original Core:** GoatBot V2 by NTKhang
-* **FCA Library:** [fca-neokex](https://github.com/KhangGia1810/fca-neokex)
-* **Modifications:** Cid Kageno (Shadow Garden Edition)
+* **Base Bot Core:** GoatBot V2 — NTKhang
+* **FCA Library:** NeoKex (extended fork with additional FCA support)
+* **Fork & Enhancements:** Starboy Aphelion
+* **Theme & Concept:** CID Kageno — Shadow Garden
 
 ---
 
-
+⭐ If you like this project, don’t forget to give it a star on GitHub.
