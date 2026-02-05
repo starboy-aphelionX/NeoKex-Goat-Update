@@ -12,28 +12,28 @@
   "antiInbox": false,
   "language": "en",
   "notesLanguage": "change to your language with ISO 639-1 code, available languages: vi (Vietnamese), en (English)",
-  "nickNameBot": "Alpha AI",
-  "prefix": "/",
+  "nickNameBot": "YOUR BOT NAME",
+  "prefix": "YOUR BOT PREFIX",
   "adminOnly": {
     "enable": false,
     "ignoreCommand": []
   },
   "adminBot": [
-    "100075163264087"
+    "YOUR UID"
   ],
   "premiumUsers": [
-    "100075163264087"
+    "UID"
   ],
   "devUsers": [
-    "100075163264087"
+    "UID"
   ],
   "notes_premiumUsers": "List of user IDs with premium access (role 3)",
   "notes_devUsers": "List of developer IDs with full access (role 4)",
   "whiteListMode": {
     "enable": false,
     "whiteListIds": [
-      "100075163264087",
-      "100075163264087"
+      "YOUR UID",
+      ""
     ],
     "notes": "if you enable this feature, only the ids in the whiteListIds list can use the bot"
   },
