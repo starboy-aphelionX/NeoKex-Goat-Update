@@ -1,119 +1,119 @@
-const a = require("axios");
-const b = require("fs");
-const c = require("path");
-const d = require("yt-search");
-
-const nix = "https://raw.githubusercontent.com/aryannix/stuffs/master/raw/apis.json";
-
-async function getStream(url) {
-  const res = await a({ url, responseType: "stream" });
-  return res.data;
-}
-
-async function downloadSong(baseApi, url, api, event, title = null) {
-  try {
-    const apiUrl = `${baseApi}/play?url=${encodeURIComponent(url)}`;
-    const res = await a.get(apiUrl);
-    const data = res.data;
-
-    if (!data.status || !data.downloadUrl) throw new Error("API failed to return download URL.");
-
-    const songTitle = title || data.title;
-    const fileName = `${songTitle}.mp3`.replace(/[\\/:"*?<>|]/g, "");
-    const filePath = c.join(__dirname, fileName);
-
-    const songData = await a.get(data.downloadUrl, { responseType: "arraybuffer" });
-    b.writeFileSync(filePath, songData.data);
-
-    await api.sendMessage(
-      { body: `• ${songTitle}`, attachment: b.createReadStream(filePath) },
-      event.threadID,
-      () => b.unlinkSync(filePath),
-      event.messageID
-    );
-  } catch (err) {
-    console.error(err);
-    api.sendMessage(`❌ Failed to download song: ${err.message}`, event.threadID, event.messageID);
-  }
-}
+const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   config: {
-    name: "song",
-    aliases: ["music", "sing"],
-    version: "0.0.1",
-    author: "ArYAN",
-    countDown: 5,
-    role: 0,
-    shortDescription: "Sing tomake chai",
-    longDescription: "Search and download music from YouTube",
-    category: "MUSIC",
-    guide: "/play <song name or YouTube URL>"
+    name: "music",
+    author: "Meheraz",
+    category: "Youtube Song Downloader"
   },
 
-  onStart: async function ({ api: e, event: f, args: g, commandName: cmd }) {
-    let baseApi;
+  onStart: async function ({ api, args, message, event }) {
     try {
-      const configRes = await a.get(nix);
-      baseApi = configRes.data && configRes.data.api;
-      if (!baseApi) throw new Error("Configuration Error: Missing API in GitHub JSON.");
-    } catch (error) {
-      return e.sendMessage("❌ Failed to fetch API configuration from GitHub.", f.threadID, f.messageID);
-    }
-    
-    if (!g.length) return e.sendMessage("❌ Provide a song name or YouTube URL.", f.threadID, f.messageID);
+      const query = args.join(" ");
+      if (!query) {
+        return message.reply("❌ Please provide a song name!");
+      }
 
-    const aryan = g;
-    const query = aryan.join(" ");
-    if (query.startsWith("http")) return downloadSong(baseApi, query, e, f);
+      api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
-    try {
-      const res = await d(query);
-      const results = res.videos.slice(0, 6);
-      if (!results.length) return e.sendMessage("❌ No results found.", f.threadID, f.messageID);
+      // 🔎 SEARCH SONG
+      const searchResponse = await axios.get(
+        `https://free-audio-api.onrender.com/search?q=${encodeURIComponent(query)}`
+      );
 
-      let msg = "";
-      results.forEach((v, i) => {
-        msg += `${i + 1}. ${v.title}\n⏱ ${v.timestamp} | 👀 ${v.views}\n\n`;
+      let videos = [];
+
+      if (Array.isArray(searchResponse.data)) {
+        videos = searchResponse.data;
+      } else if (Array.isArray(searchResponse.data.data)) {
+        videos = searchResponse.data.data;
+      } else {
+        return message.reply("⚠️ API response error!");
+      }
+
+      if (!videos.length) {
+        return message.reply("❌ No results found!");
+      }
+
+      // ⏱ Duration Filter (under 10 min)
+      const parseDuration = (timestamp) => {
+        if (!timestamp) return 0;
+        const parts = timestamp.split(":").map(Number);
+        return parts.reduce((acc, val) => acc * 60 + val, 0);
+      };
+
+      const filteredVideos = videos.filter(video => {
+        return parseDuration(video.timestamp) < 600;
       });
 
-      const thumbs = await Promise.all(results.map(v => getStream(v.thumbnail)));
+      if (!filteredVideos.length) {
+        return message.reply("❌ No audio under 10 minutes found!");
+      }
 
-      e.sendMessage(
-        { body: msg + "Reply with number (1-6) to download song", attachment: thumbs },
-        f.threadID,
-        (err, info) => {
-          if (err) return console.error(err);
-          global.GoatBot.onReply.set(info.messageID, {
-            results,
-            messageID: info.messageID,
-            author: f.senderID,
-            commandName: cmd,
-            baseApi
-          });
-        },
-        f.messageID
+      const selectedVideo = filteredVideos[0];
+      const videoId = selectedVideo.id || selectedVideo.videoId;
+
+      if (!videoId) {
+        return message.reply("⚠️ Invalid video ID!");
+      }
+
+      // 🎵 GET DOWNLOAD LINK
+      const apiResponse = await axios.get(
+        `https://free-audio-api.onrender.com/download?id=${videoId}`
       );
-    } catch (err) {
-      console.error(err);
-      e.sendMessage("❌ Failed to search YouTube.", f.threadID, f.messageID);
+
+      const audioUrl =
+        apiResponse.data.url || apiResponse.data.data?.url;
+
+      if (!audioUrl) {
+        throw new Error("Audio URL not found!");
+      }
+
+      // 🗂 Unique temp file
+      const tempFilePath = path.join(
+        __dirname,
+        `temp_${Date.now()}.m4a`
+      );
+
+      const writer = fs.createWriteStream(tempFilePath);
+
+      const audioResponse = await axios({
+        url: audioUrl,
+        method: "GET",
+        responseType: "stream"
+      });
+
+      audioResponse.data.pipe(writer);
+
+      await new Promise((resolve, reject) => {
+        writer.on("finish", resolve);
+        writer.on("error", reject);
+      });
+
+      // 📦 File size check (25MB limit)
+      const stats = fs.statSync(tempFilePath);
+      const fileSizeInMB = stats.size / (1024 * 1024);
+
+      if (fileSizeInMB > 25) {
+        fs.unlinkSync(tempFilePath);
+        return message.reply("❌ File too large to send (Over 25MB).");
+      }
+
+      api.setMessageReaction("✅", event.messageID, () => {}, true);
+
+      await message.reply({
+        body: `🎧 Now Playing:\n\n📌 ${selectedVideo.title}\n⏱ ${selectedVideo.timestamp}`,
+        attachment: fs.createReadStream(tempFilePath)
+      });
+
+      fs.unlink(tempFilePath, () => {});
+
+    } catch (error) {
+      console.log(error);
+      api.setMessageReaction("❌", event.messageID, () => {}, true);
+      message.reply(`⚠️ Error: ${error.message}`);
     }
-  },
-
-  onReply: async function ({ api: e, event: f, Reply: g }) {
-    const results = g.results;
-    const baseApi = g.baseApi;
-    if (!baseApi) return e.sendMessage("❌ Session expired. Please restart the command.", f.threadID, f.messageID);
-
-    const choice = parseInt(f.body);
-
-    if (isNaN(choice) || choice < 1 || choice > results.length) {
-      return e.sendMessage("❌ Invalid selection.", f.threadID, f.messageID);
-    }
-
-    const selected = results[choice - 1];
-    await e.unsendMessage(g.messageID);
-
-    downloadSong(baseApi, selected.url, e, f, selected.title);
   }
 };
